@@ -2,6 +2,7 @@ package com.spongey.simpletodo;
 
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -13,10 +14,16 @@ import java.util.List;
 // Responsible for displaying data from the model into a single row in the recyclerview at a time
 public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> {
 
-    List<String> items;
+    public interface  OnLongClickListener{
+        void onItemLongClicked(int position);
+    }
 
-    public ItemsAdapter(List<String> items) {
+    List<String> items;
+    OnLongClickListener longClickListener;
+
+    public ItemsAdapter(List<String> items, OnLongClickListener longClickListener) {
         this.items = items;
+        this.longClickListener = longClickListener;
     }
 
     @NonNull
@@ -59,6 +66,14 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
         // Responsible for updating teh view in the view holder with its data
         public void bind(String item) {
             tvItem.setText(item);
+            tvItem.setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    // Notifying the listener which position on the recyclerview was long clicked
+                    longClickListener.onItemLongClicked(getAdapterPosition());
+                    return true;
+                }
+            });
         }
     }
 }

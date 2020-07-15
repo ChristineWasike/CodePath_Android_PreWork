@@ -14,15 +14,22 @@ import java.util.List;
 // Responsible for displaying data from the model into a single row in the recyclerview at a time
 public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> {
 
-    public interface  OnLongClickListener{
+    public interface OnClickListener {
+        void onItemClicked(int position);
+    }
+
+    public interface OnLongClickListener {
         void onItemLongClicked(int position);
     }
 
     List<String> items;
+    OnClickListener clickListener;
     OnLongClickListener longClickListener;
 
-    public ItemsAdapter(List<String> items, OnLongClickListener longClickListener) {
+    public ItemsAdapter(List<String> items, OnClickListener clickListener,
+                        OnLongClickListener longClickListener) {
         this.items = items;
+        this.clickListener = clickListener;
         this.longClickListener = longClickListener;
     }
 
@@ -66,6 +73,16 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder> 
         // Responsible for updating teh view in the view holder with its data
         public void bind(String item) {
             tvItem.setText(item);
+
+            // Adding an  on click listener for the edit item functionality
+            tvItem.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    clickListener.onItemClicked(getAdapterPosition());
+                }
+            });
+
+            // Adding an on long click listener for the delete item functionality
             tvItem.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View view) {

@@ -1,9 +1,11 @@
 package com.spongey.simpletodo;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -20,6 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String KEY_ITEM_TEXT = "item_text";
+    public static final String KEY_ITEM_POSITION = "item_position";
+    public static final int EDIT_TEXT_CODE = 20;
+
     List<String> items;
 
     // References to the views in the main activity
@@ -42,6 +49,22 @@ public class MainActivity extends AppCompatActivity {
 
         loadItems();
 
+        ItemsAdapter.OnClickListener clickListener = new ItemsAdapter.OnClickListener() {
+            @Override
+            public void onItemClicked(int position) {
+                Log.d("Main Activity:  ", "Single click at position " + position);
+
+                // Create the new edit activity
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+
+                // Pass the relevant data to the new activity
+                intent.putExtra(KEY_ITEM_TEXT, items.get(position));
+                intent.putExtra(KEY_ITEM_POSITION, position);
+
+                // Tell the system to display the new activity
+                startActivityForResult(intent, EDIT_TEXT_CODE);
+            }
+        };
 
         ItemsAdapter.OnLongClickListener longClickListener = new ItemsAdapter.OnLongClickListener() {
             @Override
@@ -55,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
             }
         };
 
-        itemsAdapter = new ItemsAdapter(items, longClickListener);
+        itemsAdapter = new ItemsAdapter(items, clickListener, longClickListener);
         rvItems.setAdapter(itemsAdapter);
         rvItems.setLayoutManager(new LinearLayoutManager(this));
 
@@ -74,11 +97,39 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private File getDataFile(){
+    // Handles teh result of the edit activity
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == EDIT_TEXT_CODE) {
+            // Retrieve the updated text value
+            String itemText = data.getStringExtra(KEY_ITEM_TEXT);
+
+            // Extract the original position of the edited item
+            int position = data.getExtras().getInt(KEY_ITEM_POSITION);
+
+            // Update the model at the right position with the new item text
+            items.set(position, itemText);
+
+            // Notify the adapter of the change
+            itemsAdapter.notifyItemChanged(position);
+
+            // Persist the data
+            saveItems();
+            Toast.makeText(getApplicationContext(), "Item updated successfully",
+                    Toast.LENGTH_SHORT).show();
+
+        } else {
+            Log.w("MainActivity", "Unknown call to OnActivityResult");
+        }
+    }
+
+    private File getDataFile() {
         return new File(getFilesDir(), "data.txt");
     }
+
     //Loads items by reading  every line in teh data file
-    private  void loadItems(){
+    private void loadItems() {
         try {
             items = new ArrayList<>(FileUtils.readLines(getDataFile(), Charset.defaultCharset()));
         } catch (IOException e) {
@@ -88,7 +139,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Saves items to the data file
-    private void saveItems(){
+    private void saveItems() {
         try {
             FileUtils.writeLines(getDataFile(), items);
         } catch (IOException e) {

@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Handles teh result of the edit activity
+    // Handles the result of the edit activity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
             String itemText = data.getStringExtra(KEY_ITEM_TEXT);
 
             // Extract the original position of the edited item
-            int position = data.getExtras().getInt(KEY_ITEM_POSITION);
+            int position = data.getExtras().getInt(KEY_ITEM_POSITION);http://www.cockos.com/licecap/
 
             // Update the model at the right position with the new item text
             items.set(position, itemText);
